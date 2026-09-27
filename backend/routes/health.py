@@ -1,11 +1,11 @@
 from fastapi import APIRouter, status
 from utils.health import get_uptime, get_db_status
-from models.response import HealthApiResponse
+from schemas.response import HealthApiSchema
 
 router = APIRouter()
 
 
-@router.get("/health", status_code=status.HTTP_200_OK, response_model=HealthApiResponse)
+@router.get("/health", status_code=status.HTTP_200_OK, response_model=HealthApiSchema)
 def health_check():
     return {
         "status": "OK",

@@ -4,9 +4,11 @@ from database.db import engine
 
 start_time = datetime.now(timezone.utc)
 
+
 def get_uptime():
     uptime = datetime.now(timezone.utc) - start_time
     return int(uptime.total_seconds())
+
 
 def get_db_status():
     try:
@@ -14,4 +16,4 @@ def get_db_status():
             connection.execute(text("SELECT 1"))
         return "Connected"
     except Exception:
-        return"Disconnected"
+        return "Disconnected"

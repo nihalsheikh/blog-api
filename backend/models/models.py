@@ -16,7 +16,7 @@ class Blog(Base):
         nullable=False,
         default=lambda: str(uuid.uuid4()),
     )
-    title = Column(String(60), nullable=False)
+    title = Column(String, nullable=False)
     content = Column(Text, nullable=False)
 
     created_at = Column(
