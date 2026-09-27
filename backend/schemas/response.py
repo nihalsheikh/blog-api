@@ -2,6 +2,7 @@ from pydantic import BaseModel, ConfigDict
 from datetime import datetime
 
 
+# Health API
 class HealthApiSchema(BaseModel):
     status: str
     message: str
@@ -9,6 +10,7 @@ class HealthApiSchema(BaseModel):
     server_uptime: int
 
 
+# Blogs
 class BlogResponseData(BaseModel):
     id: str
     title: str
@@ -30,4 +32,30 @@ class AllBlogsResponseSchema(BaseModel):
 
 
 class DeleteBlogResponseSchema(BaseModel):
+    message: str
+
+
+# Users
+class UserResponseData(BaseModel):
+    id: str
+    name: str
+    email: str
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class UserProfileResponseSchema(BaseModel):
+    message: str
+    user: UserResponseData
+
+
+class UserLoginResponseSchema(BaseModel):
+    message: str
+    access_token: str
+    token_type: str
+
+
+class UserDeletedResponseSchema(BaseModel):
     message: str

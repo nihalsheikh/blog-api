@@ -8,6 +8,7 @@ from schemas.response import (
 )
 from utils.get_db import get_db
 from models.models import Blog
+from auth.token import verify_token
 
 router = APIRouter()
 
@@ -16,8 +17,12 @@ router = APIRouter()
 @router.post(
     "/blogs", status_code=status.HTTP_201_CREATED, response_model=BlogResponseSchema
 )
-def create_blog(blog: BlogCreateSchema, db: Session = Depends(get_db)):
-    new_blog = Blog(title=blog.title, content=blog.content)
+def create_blog(
+    blog: BlogCreateSchema,
+    user_id: str = Depends(verify_token),
+    db: Session = Depends(get_db),
+):
+    new_blog = Blog(title=blog.title, content=blog.content, user_id=user_id)
 
     db.add(new_blog)
     db.commit()
@@ -61,7 +66,10 @@ def get_blog(blog_id: str, db: Session = Depends(get_db)):
     response_model=BlogResponseSchema,
 )
 def update_blog(
-    blog_id: str, updated_blog: BlogCreateSchema, db: Session = Depends(get_db)
+    blog_id: str,
+    updated_blog: BlogCreateSchema,
+    user_id: str = Depends(verify_token),
+    db: Session = Depends(get_db),
 ):
     blog = db.query(Blog).filter(Blog.id == blog_id).first()
 
@@ -85,7 +93,9 @@ def update_blog(
     status_code=status.HTTP_200_OK,
     response_model=DeleteBlogResponseSchema,
 )
-def delete_blog(blog_id: str, db: Session = Depends(get_db)):
+def delete_blog(
+    blog_id: str, user_id: str = Depends(verify_token), db: Session = Depends(get_db)
+):
     blog = db.query(Blog).filter(Blog.id == blog_id).first()
 
     if not blog:
