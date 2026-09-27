@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
 from sqlalchemy.orm import Session
 
 from schemas.request import BlogCreateSchema
@@ -11,6 +11,7 @@ from schemas.response import (
 from utils.get_db import get_db
 from models.models import Blog, User
 from auth.auth import get_current_user
+from middleware.rate_limit import limiter
 
 router = APIRouter()
 
@@ -19,7 +20,9 @@ router = APIRouter()
 @router.post(
     "/blogs", status_code=status.HTTP_201_CREATED, response_model=BlogResponseSchema
 )
+@limiter.limit("10/minute")
 def create_blog(
+    request: Request,
     blog: BlogCreateSchema,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -37,11 +40,32 @@ def create_blog(
 @router.get(
     "/blogs", status_code=status.HTTP_200_OK, response_model=AllBlogsResponseSchema
 )
-def get_blogs(db: Session = Depends(get_db)):
-    all_blogs = (
-        db.query(Blog).order_by(Blog.created_at.desc()).all()
-    )  # newest blog on top by desc
-    return {"message": "Fetched all blogs", "blogs": all_blogs}
+@limiter.limit("50/minute")
+def get_blogs(
+    request: Request,
+    page: int = Query(default=1, ge=1),
+    limit: int = Query(default=5, ge=1, le=50),
+    search: str = Query(default=""),
+    db: Session = Depends(get_db),
+):
+    # Search
+    query = db.query(Blog)
+    if search:
+        query = query.filter(Blog.title.ilike(f"%{search}%"))
+
+    total = query.count()
+
+    # Pagination Logic
+    start = (page - 1) * limit
+    blogs = query.order_by(Blog.created_at.desc()).offset(start).limit(limit).all()
+
+    return {
+        "message": "Fetched all blogs",
+        "total": total,
+        "page": page,
+        "limit": limit,
+        "blogs": blogs,
+    }
 
 
 # Read a single blog
@@ -50,7 +74,8 @@ def get_blogs(db: Session = Depends(get_db)):
     status_code=status.HTTP_200_OK,
     response_model=BlogResponseSchema,
 )
-def get_blog(blog_id: str, db: Session = Depends(get_db)):
+@limiter.limit("50/minute")
+def get_blog(request: Request, blog_id: str, db: Session = Depends(get_db)):
     blog = db.query(Blog).filter(Blog.id == blog_id).first()
 
     if not blog:
@@ -61,13 +86,45 @@ def get_blog(blog_id: str, db: Session = Depends(get_db)):
     return {"message": "Fetched the blog details", "blog": blog}
 
 
+# User's own post
+@router.get(
+    "/me/blogs", status_code=status.HTTP_200_OK, response_model=AllBlogsResponseSchema
+)
+@limiter.limit("10/minute")
+def get_user_blogs(
+    request: Request,
+    page: int = Query(default=1, ge=1),
+    limit: int = Query(default=5, ge=1, le=50),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    query = db.query(Blog).filter(Blog.user_id == current_user.id)
+
+    total = query.count()
+
+    # Pagination
+    start = (page - 1) * limit
+
+    blogs = query.order_by(Blog.created_at.desc()).offset(start).limit(limit).all()
+
+    return {
+        "message": "Fetched current user blogs",
+        "total": total,
+        "page": page,
+        "limit": limit,
+        "blogs": blogs,
+    }
+
+
 # Update the blog
 @router.put(
     "/blogs/{blog_id}",
     status_code=status.HTTP_200_OK,
     response_model=BlogResponseSchema,
 )
+@limiter.limit("20/minute")
 def update_blog(
+    request: Request,
     blog_id: str,
     updated_blog: BlogCreateSchema,
     current_user: User = Depends(get_current_user),
@@ -99,7 +156,9 @@ def update_blog(
     status_code=status.HTTP_200_OK,
     response_model=DeleteBlogResponseSchema,
 )
+@limiter.limit("5/minute")
 def delete_blog(
+    request: Request,
     blog_id: str,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from schemas.request import UserCreateSchema
@@ -12,6 +12,7 @@ from utils.get_db import get_db
 from auth.password import hash_password, verify_password
 from auth.token import create_token
 from auth.auth import get_current_user
+from middleware.rate_limit import limiter
 
 router = APIRouter()
 
@@ -22,7 +23,10 @@ router = APIRouter()
     status_code=status.HTTP_201_CREATED,
     response_model=UserProfileResponseSchema,
 )
-def create_user(user_data: UserCreateSchema, db: Session = Depends(get_db)):
+@limiter.limit("5/minute")
+def create_user(
+    request: Request, user_data: UserCreateSchema, db: Session = Depends(get_db)
+):
     user = db.query(User).filter(User.email == user_data.email).first()
 
     if user:
@@ -44,8 +48,11 @@ def create_user(user_data: UserCreateSchema, db: Session = Depends(get_db)):
 @router.post(
     "/login", status_code=status.HTTP_200_OK, response_model=UserLoginResponseSchema
 )
+@limiter.limit("5/minute")
 def login(
-    form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)
+    request: Request,
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    db: Session = Depends(get_db),
 ):
     user = db.query(User).filter(User.email == form_data.username).first()
 
@@ -66,7 +73,8 @@ def login(
 @router.get(
     "/profile", status_code=status.HTTP_200_OK, response_model=UserProfileResponseSchema
 )
-def profile(current_user: User = Depends(get_current_user)):
+@limiter.limit("20/minute")
+def profile(request: Request, current_user: User = Depends(get_current_user)):
     return {"message": "Fetched profile details", "user": current_user}
 
 
@@ -74,8 +82,11 @@ def profile(current_user: User = Depends(get_current_user)):
 @router.delete(
     "/profile", status_code=status.HTTP_200_OK, response_model=UserDeletedResponseSchema
 )
+@limiter.limit("5/minute")
 def delete_user(
-    current_user: User = Depends(get_current_user), db: Session = Depends(get_db)
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
     db.delete(current_user)
     db.commit()

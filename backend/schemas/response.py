@@ -28,6 +28,9 @@ class BlogResponseSchema(BaseModel):
 
 class AllBlogsResponseSchema(BaseModel):
     message: str
+    total: int
+    page: int
+    limit: int
     blogs: list[BlogResponseData]
 
 
