@@ -1,14 +1,16 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+
 from schemas.request import BlogCreateSchema
 from schemas.response import (
     BlogResponseSchema,
     AllBlogsResponseSchema,
     DeleteBlogResponseSchema,
 )
+
 from utils.get_db import get_db
-from models.models import Blog
-from auth.token import verify_token
+from models.models import Blog, User
+from auth.auth import get_current_user
 
 router = APIRouter()
 
@@ -19,10 +21,10 @@ router = APIRouter()
 )
 def create_blog(
     blog: BlogCreateSchema,
-    user_id: str = Depends(verify_token),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    new_blog = Blog(title=blog.title, content=blog.content, user_id=user_id)
+    new_blog = Blog(title=blog.title, content=blog.content, user_id=current_user.id)
 
     db.add(new_blog)
     db.commit()
@@ -68,10 +70,14 @@ def get_blog(blog_id: str, db: Session = Depends(get_db)):
 def update_blog(
     blog_id: str,
     updated_blog: BlogCreateSchema,
-    user_id: str = Depends(verify_token),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    blog = db.query(Blog).filter(Blog.id == blog_id).first()
+    blog = (
+        db.query(Blog)
+        .filter(Blog.id == blog_id, Blog.user_id == current_user.id)
+        .first()
+    )
 
     if not blog:
         raise HTTPException(
@@ -94,9 +100,15 @@ def update_blog(
     response_model=DeleteBlogResponseSchema,
 )
 def delete_blog(
-    blog_id: str, user_id: str = Depends(verify_token), db: Session = Depends(get_db)
+    blog_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
-    blog = db.query(Blog).filter(Blog.id == blog_id).first()
+    blog = (
+        db.query(Blog)
+        .filter(Blog.id == blog_id, Blog.user_id == current_user.id)
+        .first()
+    )
 
     if not blog:
         raise HTTPException(

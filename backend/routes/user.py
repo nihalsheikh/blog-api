@@ -10,7 +10,8 @@ from schemas.response import (
 from models.models import User
 from utils.get_db import get_db
 from auth.password import hash_password, verify_password
-from auth.token import create_token, verify_token
+from auth.token import create_token
+from auth.auth import get_current_user
 
 router = APIRouter()
 
@@ -55,7 +56,7 @@ def login(
 
     token = create_token(user)
     return {
-        "message": "Login suuccessfull",
+        "message": "Login successful",
         "access_token": token,
         "token_type": "bearer",
     }
@@ -65,30 +66,18 @@ def login(
 @router.get(
     "/profile", status_code=status.HTTP_200_OK, response_model=UserProfileResponseSchema
 )
-def profile(user_id: str = Depends(verify_token), db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.id == user_id).first()
-
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
-        )
-
-    return {"message": "Fetched profile details", "user": user}
+def profile(current_user: User = Depends(get_current_user)):
+    return {"message": "Fetched profile details", "user": current_user}
 
 
 # Delete user
 @router.delete(
     "/profile", status_code=status.HTTP_200_OK, response_model=UserDeletedResponseSchema
 )
-def delete_user(user_id: str = Depends(verify_token), db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.id == user_id).first()
-
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
-        )
-
-    db.delete(user)
+def delete_user(
+    current_user: User = Depends(get_current_user), db: Session = Depends(get_db)
+):
+    db.delete(current_user)
     db.commit()
 
     return {"message": "User deleted successfully"}
