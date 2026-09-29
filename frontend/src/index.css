@@ -1,0 +1,527 @@
+@import "tailwindcss";
+
+/* ============================================================
+   NARRA — Design System
+   Charcoal ink on warm paper, one burnt-orange accent. Every
+   surface is a token, never a hex. The accent is rationed: if
+   something is orange, you can act on it, and nothing else may
+   be orange. The 60/30/10 split is load-bearing here — 60%
+   paper, 30% ink, 10% ember.
+   ============================================================ */
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ---------- Raw palettes (Tailwind utility sources) ---------- */
+
+@theme {
+  /* Chrome. Tight, neutral grotesque — good at 13-15px. */
+  --font-sans: "Inter", "Inter var", ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, sans-serif;
+  /* Reading. An old-style serif, so the article has its own voice
+     and never inherits the interface's. */
+  --font-display: "Fraunces", "Instrument Serif", "Iowan Old Style",
+    "Palatino Linotype", Palatino, Georgia, ui-serif, serif;
+  /* Reserved for the rare literal — a code sample, a URL. */
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* Brand — teal. The single accent. */
+  --color-brand-50: #f0fdfa;
+  --color-brand-100: #ccfbf1;
+  --color-brand-200: #99f6e4;
+  --color-brand-300: #5eead4;
+  --color-brand-400: #2dd4bf;
+  --color-brand-500: #14b8a6;
+  --color-brand-600: #0d9488;
+  --color-brand-700: #0f766e;
+  --color-brand-800: #115e59;
+  --color-brand-900: #134e4a;
+
+  /* Ink — warm neutrals, no colour cast. */
+  --color-ink-50: #fafaf9;
+  --color-ink-100: #f1f1ef;
+  --color-ink-200: #e4e4e1;
+  --color-ink-300: #cbccc7;
+  --color-ink-400: #9a9b95;
+  --color-ink-500: #74756f;
+  --color-ink-600: #5a5b56;
+  --color-ink-700: #454540;
+  --color-ink-800: #2c2c29;
+  --color-ink-900: #1a1a19;
+}
+
+/* ---------- Semantic tokens: light (the default) ---------- */
+
+:root {
+  --text: #1a1a1a;
+  --text-soft: #3d3d3a;
+  --text-muted: #62635e;
+  --text-faint: #8b8c85;
+
+  --surface: rgba(255, 255, 255, 0.78);
+  --surface-strong: rgba(255, 255, 255, 0.92);
+  --surface-hover: rgba(255, 255, 255, 0.9);
+  --surface-border: rgba(26, 26, 26, 0.1);
+  --surface-ring: rgba(255, 255, 255, 0.9);
+  --divider: rgba(26, 26, 26, 0.1);
+
+  --input-bg: rgba(255, 255, 255, 0.8);
+  --input-border: rgba(26, 26, 26, 0.14);
+  --input-border-focus: #0d9488;
+  --input-ring-focus: rgba(13, 148, 136, 0.18);
+
+  --chip-bg: rgba(26, 26, 26, 0.05);
+  --chip-text: #3d3d3a;
+
+  --shadow: 0 8px 32px rgba(26, 26, 25, 0.07);
+  --shadow-lift: 0 18px 50px rgba(26, 26, 25, 0.1);
+
+  --bg-base: #f9f9f7; /* off-white, never #fff — softer on a long read */
+  --bg-aurora-1: rgba(13, 148, 136, 0.11);
+  --bg-aurora-2: rgba(45, 212, 191, 0.07);
+  --bg-aurora-3: rgba(154, 155, 149, 0.09);
+}
+
+/* ---------- Dark: the same white-overlay logic, lower alpha ---------- */
+
+html.dark {
+  --text: #e8e8e3;
+  --text-soft: #b8b9b2;
+  --text-muted: #8e8f88;
+  --text-faint: #6b6c66;
+
+  --surface: rgba(255, 255, 255, 0.04);
+  --surface-strong: rgba(255, 255, 255, 0.07);
+  --surface-hover: rgba(255, 255, 255, 0.08);
+  --surface-border: rgba(255, 255, 255, 0.1);
+  --surface-ring: rgba(255, 255, 255, 0.12);
+  --divider: rgba(255, 255, 255, 0.09);
+
+  --input-bg: rgba(255, 255, 255, 0.04);
+  --input-border: rgba(255, 255, 255, 0.12);
+  --input-border-focus: #5eead4;
+  --input-ring-focus: rgba(94, 234, 212, 0.2);
+
+  --chip-bg: rgba(255, 255, 255, 0.07);
+  --chip-text: #b8b9b2;
+
+  --shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+  --shadow-lift: 0 18px 50px rgba(0, 0, 0, 0.55);
+
+  --bg-base: #16161a; /* near-black slate, not neutral grey */
+  --bg-aurora-1: rgba(13, 148, 136, 0.14);
+  --bg-aurora-2: rgba(45, 212, 191, 0.08);
+  --bg-aurora-3: rgba(120, 120, 130, 0.1);
+}
+
+:root {
+  font-family: var(--font-sans);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg-base);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease-out, color 0.3s ease-out;
+}
+
+/* ---------- The aurora mesh: every surface floats above this ---------- */
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(
+      ellipse 80% 50% at 20% 0%,
+      var(--bg-aurora-1),
+      transparent 60%
+    ),
+    radial-gradient(ellipse 60% 50% at 80% 20%, var(--bg-aurora-2), transparent 60%),
+    radial-gradient(
+      ellipse 60% 60% at 50% 100%,
+      var(--bg-aurora-3),
+      transparent 60%
+    );
+  filter: saturate(1.1);
+  animation: aurora-shift 22s ease-in-out infinite;
+}
+
+/* ---------- Text utilities ---------- */
+
+@layer components {
+  .text-soft {
+    color: var(--text-soft);
+  }
+  .text-muted {
+    color: var(--text-muted);
+  }
+  .text-faint {
+    color: var(--text-faint);
+  }
+  .divider {
+    border-color: var(--divider) !important;
+  }
+}
+
+/* ---------- Glass surfaces ---------- */
+
+@layer components {
+  .glass {
+    background: var(--surface);
+    border: 1px solid var(--surface-border);
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+  }
+
+  .glass-strong {
+    background: var(--surface-strong);
+    border: 1px solid var(--surface-border);
+    backdrop-filter: blur(24px) saturate(160%);
+    -webkit-backdrop-filter: blur(24px) saturate(160%);
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--surface-border);
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    border-radius: 1rem;
+    box-shadow: var(--shadow);
+    transition: box-shadow 0.25s ease, border-color 0.25s ease,
+      transform 0.25s ease;
+  }
+  /* Only on a pointer: a card that lifts under a thumb reads as a glitch. */
+  @media (hover: hover) {
+    .card-hover:hover {
+      box-shadow: var(--shadow-lift);
+      transform: translateY(-2px);
+    }
+  }
+}
+
+/* ---------- Buttons ---------- */
+
+@layer components {
+  /* Shared button shape. Written as a comma selector rather than a class
+     that the variants @apply, because Tailwind cannot @apply a custom
+     component class. */
+  .btn-primary,
+  .btn-secondary,
+  .btn-ghost,
+  .btn-danger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    padding: 0.625rem 1.25rem;
+  }
+
+  .btn-primary:active:not(:disabled),
+  .btn-secondary:active:not(:disabled),
+  .btn-ghost:active:not(:disabled),
+  .btn-danger:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+
+  .btn-primary:disabled,
+  .btn-secondary:disabled,
+  .btn-ghost:disabled,
+  .btn-danger:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* ---- The CTA. Flat ember fill with a colour-tinted glow.
+     No gradient: at this size a gradient just muddies the hue. ---- */
+  .btn-primary {
+    background: var(--color-brand-600);
+    color: #fff;
+    box-shadow: 0 6px 18px rgba(13, 148, 136, 0.28);
+  }
+  .btn-primary:hover:not(:disabled) {
+    background: var(--color-brand-700);
+    box-shadow: 0 8px 22px rgba(13, 148, 136, 0.36);
+  }
+  .btn-primary:disabled {
+    box-shadow: none;
+  }
+
+  /* ---- The neutral action. Glass with a hairline border. ---- */
+  .btn-secondary {
+    background: var(--surface);
+    border: 1px solid var(--surface-border);
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    color: var(--text);
+  }
+  .btn-secondary:hover:not(:disabled) {
+    background: var(--surface-hover);
+  }
+
+  /* ---- The tertiary action. Text-only until hovered. ---- */
+  .btn-ghost {
+    color: var(--text-soft);
+    background: transparent;
+    padding: 0.625rem 1rem;
+  }
+  .btn-ghost:hover:not(:disabled) {
+    background: var(--surface);
+    color: var(--text);
+  }
+
+  /* ---- Destructive. Rose gradient; never neutral. ---- */
+  .btn-danger {
+    background: linear-gradient(135deg, #fb7185, #e11d48);
+    color: #fff;
+    box-shadow: 0 6px 18px rgba(225, 29, 72, 0.3);
+  }
+  .btn-danger:hover:not(:disabled) {
+    filter: brightness(1.06);
+    box-shadow: 0 8px 22px rgba(225, 29, 72, 0.4);
+  }
+}
+
+/* ---------- The reading surface ---------- */
+
+/* Article body copy only. Enough measure to read a long piece without the
+   eye losing the start of the next line. */
+.prose-narra {
+  max-width: 40rem;
+  color: var(--text-soft);
+}
+/* A drop cap on the opening paragraph — the one piece of typographic
+   theatre the app allows itself, and only at the widest viewports. */
+@media (min-width: 640px) {
+  .prose-narra > p:first-child::first-letter {
+    float: left;
+    font-family: var(--font-display);
+    font-size: 3.6em;
+    line-height: 0.82;
+    font-weight: 600;
+    padding: 0.08em 0.08em 0 0;
+    color: var(--color-brand-600);
+  }
+  html.dark .prose-narra > p:first-child::first-letter {
+    color: var(--color-brand-300);
+  }
+}
+.prose-narra p {
+  margin-bottom: 1.35em;
+}
+.prose-narra p:last-child {
+  margin-bottom: 0;
+}
+
+/* ---------- Inputs ---------- */
+@layer components {
+  .input {
+    @apply w-full rounded-xl px-3.5 py-2.5 text-sm outline-none transition;
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: var(--text);
+  }
+  .input::placeholder {
+    color: var(--text-faint);
+  }
+  .input:focus {
+    border-color: var(--input-border-focus);
+    box-shadow: 0 0 0 4px var(--input-ring-focus);
+  }
+
+  .label {
+    @apply block text-sm font-medium mb-1.5;
+    color: var(--text-soft);
+  }
+}
+
+/* ---------- Chips ---------- */
+
+@layer components {
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium;
+    background: var(--chip-bg);
+    color: var(--chip-text);
+  }
+}
+
+/* ---------- Motion ---------- */
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pop {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.18);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes aurora-shift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  33% {
+    transform: translate3d(-2%, 1%, 0) scale(1.03);
+  }
+  66% {
+    transform: translate3d(2%, -1%, 0) scale(1.02);
+  }
+}
+
+@keyframes float-slow {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes orbit {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes orbit-reverse {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+@keyframes pulse-ring {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.35;
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 0.7;
+  }
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.2;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.25);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out both;
+}
+.animate-slide-up {
+  animation: slide-up 0.35s ease-out both;
+}
+.animate-pop {
+  animation: pop 0.4s ease-out;
+}
+.animate-float {
+  animation: float-slow 3.5s ease-in-out infinite;
+}
+
+/* ---------- Circular view transition (theme toggle) ---------- */
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+/* The new theme always paints over the old one. */
+::view-transition-new(root) {
+  z-index: 9999;
+}
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+/* ---------- Reduced motion: honour it everywhere, not just the toggle ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ---------- Selection & scrollbar ---------- */
+
+::selection {
+  background: rgba(13, 148, 136, 0.24);
+  color: var(--text);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--chip-bg);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--input-border);
+  background-clip: content-box;
+}

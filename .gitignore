@@ -50,3 +50,8 @@ Thumbs.db
 
 # Jupyter
 .ipynb_checkpoints/
+
+# Agents and Guides
+.claude
+API_ROUTES.md
+UI_DESIGN_GUIDE.md
