@@ -1,4 +1,4 @@
-import { BookOpen, Feather, Lock, Search } from "lucide-react";
+import { Lock } from "lucide-react";
 
 /**
  * A dramatic bento grid: 6 tiles in a 3x2 rectangle.
