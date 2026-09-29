@@ -2,18 +2,22 @@
 
 A full-stack blogging platform — a **FastAPI** REST backend with JWT authentication and a **React 19 + TypeScript** frontend. Readers can browse and search published posts without an account; signed-in users can write, edit, and delete their own posts, and manage their account.
 
+| Light Mode                   | Dark Mode                  |
+| ---------------------------- | -------------------------- |
+| ![light](./assets/light.png) | ![dark](./assets/dark.png) |
+
 ---
 
 ## 📖 Overview
 
 The repository is split into two independently runnable applications:
 
-| | Backend | Frontend |
-|---|---|---|
-| Path | `backend/` | `frontend/` |
-| Stack | FastAPI, SQLAlchemy, PostgreSQL | React 19, TypeScript, Vite, Tailwind CSS 4 |
-| Runs on | `http://localhost:8000` | `http://localhost:5173` |
-| Entry point | `main.py` | `src/main.tsx` |
+|             | Backend                         | Frontend                                   |
+| ----------- | ------------------------------- | ------------------------------------------ |
+| Path        | `backend/`                      | `frontend/`                                |
+| Stack       | FastAPI, SQLAlchemy, PostgreSQL | React 19, TypeScript, Vite, Tailwind CSS 4 |
+| Runs on     | `http://localhost:8000`         | `http://localhost:5173`                    |
+| Entry point | `main.py`                       | `src/main.tsx`                             |
 
 The frontend is a static SPA — it holds no secrets and talks to the backend exclusively over the documented HTTP API, so either side can be run, changed, or replaced on its own.
 
@@ -22,6 +26,7 @@ The frontend is a static SPA — it holds no secrets and talks to the backend ex
 ## 🚀 Features
 
 ### Authentication & Authorization
+
 - User registration and login (OAuth2 password flow)
 - JWT access tokens with configurable expiration
 - Password hashing with bcrypt
@@ -30,6 +35,7 @@ The frontend is a static SPA — it holds no secrets and talks to the backend ex
 - Account deletion cascades to remove that user's blogs
 
 ### Blog Management
+
 - Create, read, update, and delete blogs
 - Public list with pagination and case-insensitive title search
 - "My posts" view scoped to the signed-in user
@@ -37,12 +43,14 @@ The frontend is a static SPA — it holds no secrets and talks to the backend ex
 - Reading-time and word-count estimates in the UI
 
 ### API Protection
+
 - CORS restricted to configured origins
 - Per-IP rate limiting via SlowAPI
 - Global exception handling
 - Request validation via Pydantic
 
 ### Interface
+
 - Light and dark themes, with the choice persisted across reloads
 - Responsive shell: fixed sidebar on desktop, bottom navigation on mobile
 - Loading, empty, and error states handled for every data-driven view
@@ -54,29 +62,29 @@ The frontend is a static SPA — it holds no secrets and talks to the backend ex
 
 **Backend**
 
-| Technology | Purpose |
-|---|---|
-| **FastAPI** | Web framework, auto-generated OpenAPI docs |
-| **Python** | Backend language |
-| **PostgreSQL** | Relational database |
-| **SQLAlchemy** | ORM |
-| **Pydantic** | Request/response validation |
-| **python-jose** | JWT encoding and decoding |
-| **Passlib + bcrypt** | Password hashing |
-| **SlowAPI** | Rate limiting |
-| **Uvicorn** | ASGI server |
+| Technology           | Purpose                                    |
+| -------------------- | ------------------------------------------ |
+| **FastAPI**          | Web framework, auto-generated OpenAPI docs |
+| **Python**           | Backend language                           |
+| **PostgreSQL**       | Relational database                        |
+| **SQLAlchemy**       | ORM                                        |
+| **Pydantic**         | Request/response validation                |
+| **python-jose**      | JWT encoding and decoding                  |
+| **Passlib + bcrypt** | Password hashing                           |
+| **SlowAPI**          | Rate limiting                              |
+| **Uvicorn**          | ASGI server                                |
 
 **Frontend**
 
-| Technology | Purpose |
-|---|---|
-| **React 19** | UI framework |
-| **TypeScript** | Static typing |
-| **Vite** | Dev server and build tool |
-| **React Router 7** | Client-side routing |
+| Technology         | Purpose                                  |
+| ------------------ | ---------------------------------------- |
+| **React 19**       | UI framework                             |
+| **TypeScript**     | Static typing                            |
+| **Vite**           | Dev server and build tool                |
+| **React Router 7** | Client-side routing                      |
 | **Tailwind CSS 4** | Utility-first styling (CSS-first config) |
-| **Axios** | HTTP client with auth interceptors |
-| **lucide-react** | Icon set |
+| **Axios**          | HTTP client with auth interceptors       |
+| **lucide-react**   | Icon set                                 |
 
 Interactive API documentation is served by FastAPI at `/docs` (Swagger UI) and `/redoc` while the backend is running.
 
@@ -85,6 +93,7 @@ Interactive API documentation is served by FastAPI at `/docs` (Swagger UI) and `
 ## 🚀 Getting Started
 
 ### Prerequisites
+
 - Python 3.x
 - Node.js 18+
 - A running PostgreSQL instance
@@ -206,18 +215,18 @@ blog-api/
 
 **Backend** — read in `backend/config/env_config.py`:
 
-| Variable | Purpose |
-|---|---|
-| `DATABASE_URL` | SQLAlchemy connection string (required; boot fails without it) |
-| `SECRET_KEY` | JWT signing key |
-| `ALGORITHM` | JWT signing algorithm, e.g. `HS256` |
-| `ACCESS_TOKEN_EXPIRE_DAYS` | Token lifetime in days |
-| `ORIGINS` | Comma-separated list of allowed CORS origins |
+| Variable                   | Purpose                                                        |
+| -------------------------- | -------------------------------------------------------------- |
+| `DATABASE_URL`             | SQLAlchemy connection string (required; boot fails without it) |
+| `SECRET_KEY`               | JWT signing key                                                |
+| `ALGORITHM`                | JWT signing algorithm, e.g. `HS256`                            |
+| `ACCESS_TOKEN_EXPIRE_DAYS` | Token lifetime in days                                         |
+| `ORIGINS`                  | Comma-separated list of allowed CORS origins                   |
 
 **Frontend** — read in `frontend/src/api/axios.ts`:
 
-| Variable | Purpose |
-|---|---|
+| Variable       | Purpose                                              |
+| -------------- | ---------------------------------------------------- |
 | `VITE_API_URL` | Base URL of the backend, including the `/api` prefix |
 
 ---
